@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:sample_chat_app/models/chat_model.dart';
+import 'package:sample_chat_app/models/message_model.dart';
 import 'package:sample_chat_app/models/user_profile_model.dart';
 import 'package:sample_chat_app/services/auth_services.dart';
 import 'package:sample_chat_app/utils.dart';
@@ -25,7 +26,7 @@ class DatabaseService {
                   UserProfile.fromJson(snapshot.data()!),
               toFirestore: (userProfile, _) => userProfile.toJson(),
             );
-    chatCollection = firebaseStorage.collection('chat').withConverter<Chat>(
+    chatCollection = firebaseStorage.collection('chats').withConverter<Chat>(
         fromFirestore: (snapshot, _) => Chat.fromJson(snapshot.data()!),
         toFirestore: (chat, _) => chat.toJson());
   }
@@ -42,7 +43,7 @@ class DatabaseService {
 
   Stream<DocumentSnapshot<Chat>> getChatData(String uid1, String uid2) {
     final chatId = generateChatId(uid1: uid1, uid2: uid2);
-    return chatCollection?.doc(chatId).snapshots()
+    return chatCollection!.doc(chatId).snapshots()
         as Stream<DocumentSnapshot<Chat>>;
   }
 
@@ -60,5 +61,20 @@ class DatabaseService {
     final ref = chatCollection!.doc(chatId);
     final chat = Chat(id: chatId, participants: [uid1, uid2], messages: []);
     await ref.set(chat);
+  }
+
+  Future<void> sendChatMessage(
+      String uid1, String uid2, Message message) async {
+    String chatId = generateChatId(uid1: uid1, uid2: uid2);
+    final docRef = chatCollection!.doc(chatId);
+    await docRef.update(
+      {
+        'messages': FieldValue.arrayUnion(
+          [
+            message.toJson(),
+          ],
+        )
+      },
+    );
   }
 }

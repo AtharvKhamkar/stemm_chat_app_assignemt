@@ -71,6 +71,8 @@ class _LoginPageState extends State<LoginPage> {
                         hintText: 'Password',
                         height: Get.height * 0.1,
                         validationRegEx: PASSWORD_VALIDATION_REGEX,
+                        isSuffixIcon: true,
+                        obsecureText: true,
                         onSave: (value) {
                           setState(
                             () {

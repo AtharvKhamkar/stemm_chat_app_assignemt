@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/route_manager.dart';
 import 'package:sample_chat_app/firebase_options.dart';
 import 'package:sample_chat_app/routes/routes.dart';
+import 'package:sample_chat_app/services/auth_services.dart';
 
 void main() async {
   // runApp(const MyApp());
@@ -24,7 +25,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
         useMaterial3: true,
       ),
-      initialRoute: Routes.initialRoute,
+      initialRoute: AuthService.instance.user != null ? '/home' : '/login',
       getPages: Routes.routes,
     );
   }

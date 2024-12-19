@@ -34,4 +34,25 @@ class StorageService {
     }
     return null;
   }
+
+  Future<String?> uploadImageToChat(
+      {required String chatId, required File file}) async {
+    try {
+      Reference fileRef = firebaseStorage.ref('chat/$chatId').child(
+          '${DateTime.now().toIso8601String()}${p.extension(file.path)}');
+      UploadTask task = fileRef.putFile(file);
+      return task.then(
+        (p) {
+          if (p.state == TaskState.success) {
+            return fileRef.getDownloadURL();
+          }
+          return null;
+        },
+      );
+    } catch (e) {
+      debugPrint(
+          'Error while uploading profile photo in Storage service uploadProfilePhoto function');
+    }
+    return null;
+  }
 }
