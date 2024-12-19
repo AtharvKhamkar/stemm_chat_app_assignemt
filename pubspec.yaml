@@ -43,6 +43,7 @@ dependencies:
   path: ^1.9.0
   firebase_app_check: ^0.3.1+2
   get: ^4.6.6
+  dash_chat_2: ^0.0.21
 
 dev_dependencies:
   flutter_test:
