@@ -1,10 +1,12 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:sample_chat_app/consts.dart';
+import 'package:sample_chat_app/models/user_profile_model.dart';
 import 'package:sample_chat_app/services/auth_services.dart';
+import 'package:sample_chat_app/services/database_service.dart';
 import 'package:sample_chat_app/services/media_service.dart';
+import 'package:sample_chat_app/services/storage_service.dart';
 import 'package:sample_chat_app/widgets/custom_form_field.dart';
 
 class RegistrationPage extends StatefulWidget {
@@ -16,7 +18,7 @@ class RegistrationPage extends StatefulWidget {
 
 class _RegistrationPageState extends State<RegistrationPage> {
   final GlobalKey<FormState> registrationFormKey = GlobalKey();
-  String? email, password;
+  String? name, email, password;
   File? selectedImage;
   @override
   Widget build(BuildContext context) {
@@ -31,7 +33,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
           child: SingleChildScrollView(
             child: Column(
               children: [
-                ProfileSelection(),
+                profileSelection(),
                 SizedBox(
                   height: Get.height * 0.03,
                 ),
@@ -39,6 +41,21 @@ class _RegistrationPageState extends State<RegistrationPage> {
                   key: registrationFormKey,
                   child: Column(
                     children: [
+                      CustomFormField(
+                        hintText: 'Name',
+                        height: Get.height * 0.1,
+                        validationRegEx: NAME_VALIDATION_REGEX,
+                        onSave: (value) {
+                          setState(
+                            () {
+                              name = value;
+                            },
+                          );
+                        },
+                      ),
+                      SizedBox(
+                        height: Get.height * 0.03,
+                      ),
                       CustomFormField(
                         hintText: 'Email',
                         height: Get.height * 0.1,
@@ -71,23 +88,42 @@ class _RegistrationPageState extends State<RegistrationPage> {
                       ),
                       GestureDetector(
                         onTap: () async {
-                          if (registrationFormKey.currentState?.validate() ??
-                              false) {
+                          if ((registrationFormKey.currentState?.validate() ??
+                                  false) &&
+                              selectedImage != null) {
                             registrationFormKey.currentState?.save();
                             debugPrint(email);
                             debugPrint(password);
                             bool result = await AuthService.instance
                                 .registerUser(email!, password!);
+
                             debugPrint(
                                 'Result of the registration process $result');
                             if (result) {
-                              Get.snackbar(
-                                  'Registration', 'Registration Successfull!');
-                              Get.offAllNamed('/home');
+                              String? profilePic = await StorageService.instance
+                                  .uploadProfilePhoto(
+                                      uid: AuthService.instance.user!.uid,
+                                      file: selectedImage!);
+                              if (profilePic != null) {
+                                await DatabaseService.instance
+                                    .createUserProfile(
+                                  userProfile: UserProfile(
+                                      uid: AuthService.instance.user?.uid,
+                                      name: name,
+                                      email: email,
+                                      pfpURL: profilePic),
+                                );
+                                Get.snackbar('Registration',
+                                    'Registration Successfull!');
+                                Get.offAllNamed('/home');
+                              }
                             } else {
                               Get.snackbar(
                                   'Registration', 'Registration Failed!');
                             }
+                          } else {
+                            Get.snackbar(
+                                'Registration', 'Please select profile image');
                           }
                         },
                         child: Container(
@@ -118,7 +154,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
     );
   }
 
-  Widget ProfileSelection() {
+  Widget profileSelection() {
     return GestureDetector(
       onTap: () async {
         File? file = await MediaService.instance.getImageFromGallery();

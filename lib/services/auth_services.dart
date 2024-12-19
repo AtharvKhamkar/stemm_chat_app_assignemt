@@ -2,7 +2,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class AuthService {
-  AuthService._();
+  AuthService._() {
+    firebaseAuth.authStateChanges().listen(authServiceChangesStreamListner);
+  }
 
   static final AuthService _instance = AuthService._();
 
@@ -49,5 +51,13 @@ class AuthService {
     }
 
     return false;
+  }
+
+  void authServiceChangesStreamListner(User? existingUser) {
+    if (user != null) {
+      user = existingUser;
+    } else {
+      user = null;
+    }
   }
 }
