@@ -2,16 +2,24 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:sample_chat_app/widgets/custom_bottom_sheet_button.dart';
 
-class Utils {
-  static void uploadFilesBottomSheet({
-    required Function()? onPdfClick,
-    required Function()? onGalleryClick,
-    required Function()? onCameraClick,
-  }) {
+class UploadFilesBottomSheet extends StatelessWidget {
+  final Function()? onPdfClick;
+  final Function()? onGalleryClick;
+  final Function()? onCameraClick;
+
+  const UploadFilesBottomSheet({
+    Key? key,
+    required this.onPdfClick,
+    required this.onGalleryClick,
+    required this.onCameraClick,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
     final double height = Get.height;
     final double width = Get.width;
 
-    Get.bottomSheet(Container(
+    return Container(
       height: height * 0.3,
       padding: EdgeInsets.only(
         left: width * 0.05,
@@ -19,6 +27,7 @@ class Utils {
         top: height * 0.02,
       ),
       decoration: BoxDecoration(
+        color: Colors.blue.shade200,
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(width * 0.07),
           topRight: Radius.circular(width * 0.07),
@@ -39,16 +48,14 @@ class Utils {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              Obx(() {
-                return CustomBottomSheetButton(
-                  subtitle: 'File',
-                  icon: const Icon(Icons.file_copy),
-                  onTap: onPdfClick,
-                  size: width * 0.1,
-                  padding: width * 0.06,
-                  fontSize: width * 0.04,
-                );
-              }),
+              CustomBottomSheetButton(
+                subtitle: 'File',
+                icon: const Icon(Icons.file_copy),
+                onTap: onPdfClick,
+                size: width * 0.1,
+                padding: width * 0.06,
+                fontSize: width * 0.04,
+              ),
               CustomBottomSheetButton(
                 onTap: onGalleryClick,
                 icon: const Icon(Icons.image),
@@ -70,13 +77,6 @@ class Utils {
           const Spacer(),
         ],
       ),
-    ));
-  }
-
-  static String generateChatId({required String uid1, required String uid2}) {
-    List uids = [uid1, uid2];
-    uids.sort();
-    String chatID = uids.fold("", (id, uid) => '$id$uid');
-    return chatID;
+    );
   }
 }

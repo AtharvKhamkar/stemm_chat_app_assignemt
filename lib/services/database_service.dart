@@ -42,13 +42,13 @@ class DatabaseService {
   }
 
   Stream<DocumentSnapshot<Chat>> getChatData(String uid1, String uid2) {
-    final chatId = generateChatId(uid1: uid1, uid2: uid2);
+    final chatId = Utils.generateChatId(uid1: uid1, uid2: uid2);
     return chatCollection!.doc(chatId).snapshots()
         as Stream<DocumentSnapshot<Chat>>;
   }
 
   Future<bool> checkChatExists(String uid1, String uid2) async {
-    final chatId = generateChatId(uid1: uid1, uid2: uid2);
+    final chatId = Utils.generateChatId(uid1: uid1, uid2: uid2);
     final result = await chatCollection?.doc(chatId).get();
     if (result != null) {
       return result.exists;
@@ -57,7 +57,7 @@ class DatabaseService {
   }
 
   Future<void> createNewChat(String uid1, String uid2) async {
-    String chatId = generateChatId(uid1: uid1, uid2: uid2);
+    String chatId = Utils.generateChatId(uid1: uid1, uid2: uid2);
     final ref = chatCollection!.doc(chatId);
     final chat = Chat(id: chatId, participants: [uid1, uid2], messages: []);
     await ref.set(chat);
@@ -65,7 +65,7 @@ class DatabaseService {
 
   Future<void> sendChatMessage(
       String uid1, String uid2, Message message) async {
-    String chatId = generateChatId(uid1: uid1, uid2: uid2);
+    String chatId = Utils.generateChatId(uid1: uid1, uid2: uid2);
     final docRef = chatCollection!.doc(chatId);
     await docRef.update(
       {

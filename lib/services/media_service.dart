@@ -25,4 +25,18 @@ class MediaService {
     }
     return null;
   }
+
+  Future<File?> getVideoFromGallery() async {
+    try {
+      final XFile? file = await picker.pickVideo(source: ImageSource.gallery);
+      if (file != null) {
+        return File(file.path);
+      }
+      return null;
+    } catch (e) {
+      debugPrint(
+          'Error while picking image from gallery in MediaService getVideoFromGallery $e');
+    }
+    return null;
+  }
 }

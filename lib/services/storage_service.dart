@@ -38,7 +38,7 @@ class StorageService {
   Future<String?> uploadImageToChat(
       {required String chatId, required File file}) async {
     try {
-      Reference fileRef = firebaseStorage.ref('chat/$chatId').child(
+      Reference fileRef = firebaseStorage.ref('chats/$chatId').child(
           '${DateTime.now().toIso8601String()}${p.extension(file.path)}');
       UploadTask task = fileRef.putFile(file);
       return task.then(
@@ -52,6 +52,27 @@ class StorageService {
     } catch (e) {
       debugPrint(
           'Error while uploading profile photo in Storage service uploadProfilePhoto function');
+    }
+    return null;
+  }
+
+  Future<String?> uploadVideoToChat(
+      {required String chatId, required File file}) async {
+    try {
+      Reference fileRef = firebaseStorage.ref('chats/$chatId').child(
+          '${DateTime.now().toIso8601String()}${p.extension(file.path)}');
+      UploadTask task = fileRef.putFile(file);
+      return task.then(
+        (p) {
+          if (p.state == TaskState.success) {
+            return fileRef.getDownloadURL();
+          }
+          return null;
+        },
+      );
+    } catch (e) {
+      debugPrint(
+          'Error while uploading profile photo in Storage service uploadVideoToChat function');
     }
     return null;
   }
