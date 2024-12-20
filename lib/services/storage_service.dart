@@ -76,4 +76,29 @@ class StorageService {
     }
     return null;
   }
+
+  Future<String?> uploadPdfToChat({
+    required String chatId,
+    required File file,
+  }) async {
+    try {
+      Reference fileRef = firebaseStorage.ref('chats/$chatId').child(
+          '${DateTime.now().toIso8601String()}${p.extension(file.path)}');
+
+      UploadTask task = fileRef.putFile(file);
+
+      return task.then(
+        (p) {
+          if (p.state == TaskState.success) {
+            return fileRef.getDownloadURL();
+          }
+          return null;
+        },
+      );
+    } catch (e) {
+      debugPrint(
+          'Error while uploading PDF file in StorageService uploadPdfToChat function: $e');
+    }
+    return null;
+  }
 }

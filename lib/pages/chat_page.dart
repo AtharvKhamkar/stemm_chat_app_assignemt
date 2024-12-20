@@ -12,7 +12,7 @@ import 'package:sample_chat_app/services/database_service.dart';
 import 'package:sample_chat_app/services/media_service.dart';
 import 'package:sample_chat_app/services/storage_service.dart';
 import 'package:sample_chat_app/utils.dart';
-import 'package:sample_chat_app/widgets/upload_media_bottom_sheet.dart';
+import 'package:sample_chat_app/widgets/upload_files_bottom_sheet.dart';
 
 class ChatPage extends StatefulWidget {
   final UserProfile chatUser;
@@ -73,6 +73,8 @@ class _ChatPageState extends State<ChatPage> {
     );
   }
 
+  //Funtions related to uploading image, video, sending and fetching chat messages --->
+
   List<ChatMessage> generateChatMessageList(List<Message> messages) {
     List<ChatMessage> chatMessages = messages.map(
       (m) {
@@ -90,6 +92,15 @@ class _ChatPageState extends State<ChatPage> {
             user: m.senderID == currentUser!.id ? currentUser! : otherUser!,
             medias: [
               ChatMedia(url: m.content!, fileName: '', type: MediaType.video)
+            ],
+            createdAt: m.sentAt!.toDate(),
+          );
+        } else if (m.messageType == MessageType.File) {
+          return ChatMessage(
+            user: m.senderID == currentUser!.id ? currentUser! : otherUser!,
+            medias: [
+              ChatMedia(
+                  url: m.content!, fileName: m.content!, type: MediaType.file)
             ],
             createdAt: m.sentAt!.toDate(),
           );
@@ -129,6 +140,17 @@ class _ChatPageState extends State<ChatPage> {
           senderID: currentUser!.id,
           content: chatMessage.medias!.first.url,
           messageType: MessageType.Video,
+          sentAt: Timestamp.fromDate(chatMessage.createdAt),
+        );
+
+        await DatabaseService.instance
+            .sendChatMessage(currentUser!.id, otherUser!.id, message);
+      } else if (chatMessage.medias!.first.type == MediaType.file) {
+        debugPrint('Entered in the file send block');
+        Message message = Message(
+          senderID: currentUser!.id,
+          content: chatMessage.medias!.first.url,
+          messageType: MessageType.File,
           sentAt: Timestamp.fromDate(chatMessage.createdAt),
         );
 
@@ -193,13 +215,37 @@ class _ChatPageState extends State<ChatPage> {
     }
   }
 
+  Future<void> pdfUploadProcess() async {
+    File? file = await MediaService.instance.getPdfFile();
+    Get.back();
+    Get.snackbar('Uploading', 'Pdf uploading in process...');
+    if (file != null) {
+      String chatId =
+          Utils.generateChatId(uid1: currentUser!.id, uid2: otherUser!.id);
+      String? downloadUrl = await StorageService.instance
+          .uploadPdfToChat(chatId: chatId, file: file);
+      if (downloadUrl != null) {
+        debugPrint('Download URL is $downloadUrl');
+        ChatMessage chatMessage = ChatMessage(
+          user: currentUser!,
+          medias: [
+            ChatMedia(
+                url: downloadUrl, fileName: downloadUrl, type: MediaType.file)
+          ],
+          createdAt: DateTime.now(),
+        );
+        sendMessage(chatMessage);
+      }
+    }
+  }
+
   Widget uploadMediaButton() {
     return IconButton(
       icon: const Icon(Icons.attach_file),
       onPressed: () {
         Get.bottomSheet(
           UploadFilesBottomSheet(
-              onPdfClick: () {},
+              onPdfClick: pdfUploadProcess,
               onGalleryClick: imageUploadProcess,
               onCameraClick: videoUploadProcess),
         );
