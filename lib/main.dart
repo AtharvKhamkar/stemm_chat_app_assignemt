@@ -7,6 +7,7 @@ import 'package:sample_chat_app/services/auth_services.dart';
 
 void main() async {
   // runApp(const MyApp());
+  print("application started");
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
